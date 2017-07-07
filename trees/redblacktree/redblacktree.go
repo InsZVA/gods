@@ -101,19 +101,88 @@ func (tree *Tree) Put(key interface{}, value interface{}) {
 // Second return parameter is true if key was found, otherwise false.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
 func (tree *Tree) Get(key interface{}) (value interface{}, found bool) {
-	node := tree.lookup(key)
-	if node != nil {
+	node, i := tree.lookup(key)
+	if node != nil && i == 0 {
 		return node.Value, true
 	}
 	return nil, false
+}
+
+// Get and return iterator
+func (tree *Tree) GetIterator(key interface{}) (iter Iterator, found bool) {
+	node, i := tree.lookup(key)
+	if node != nil && i == 0 {
+		return Iterator{
+			tree,
+			node,
+			between,
+		}, true
+	}
+	return
+}
+
+func (tree *Tree) GetIteratorOrNext(key interface{}) (iter Iterator, found bool) {
+	node, i := tree.lookup(key)
+	if node != nil {
+		if i >= 0 {
+			return Iterator{
+				tree,
+				node,
+				between,
+			}, i == 0
+		} else if i < 0 {
+			iter := Iterator{
+				tree,
+				node,
+				between,
+			}
+			if iter.Next() {
+				return iter, false
+			}
+			return Iterator{
+				tree,
+				nil,
+				end,
+			}, false
+		}
+	}
+	return
+}
+
+func (tree *Tree) GetIteratorOrPrev(key interface{}) (iter Iterator, found bool) {
+	node, i := tree.lookup(key)
+	if node != nil {
+		if i <= 0 {
+			return Iterator{
+				tree,
+				node,
+				between,
+			}, i == 0
+		} else if i > 0 {
+			iter := Iterator{
+				tree,
+				node,
+				between,
+			}
+			if iter.Prev() {
+				return iter, false
+			}
+			return Iterator{
+				tree,
+				nil,
+				begin,
+			}, false
+		}
+	}
+	return
 }
 
 // Remove remove the node from the tree by key.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
 func (tree *Tree) Remove(key interface{}) {
 	var child *Node
-	node := tree.lookup(key)
-	if node == nil {
+	node, i := tree.lookup(key)
+	if node == nil || i != 0 {
 		return
 	}
 	if node.Left != nil && node.Right != nil {
@@ -297,20 +366,28 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 	}
 }
 
-func (tree *Tree) lookup(key interface{}) *Node {
+// Return the nearest node, and a integer
+// If found node less than key return int < 0
+// If found node equals key return 0
+// If found node large than key return int > 1
+func (tree *Tree) lookup(key interface{}) (*Node, int) {
 	node := tree.Root
+	pnode := (*Node)(nil)
+	var compare int
 	for node != nil {
-		compare := tree.Comparator(key, node.Key)
+		compare = tree.Comparator(key, node.Key)
 		switch {
 		case compare == 0:
-			return node
+			return node, 0
 		case compare < 0:
+			pnode = node
 			node = node.Left
 		case compare > 0:
+			pnode = node
 			node = node.Right
 		}
 	}
-	return nil
+	return pnode, compare
 }
 
 func (node *Node) grandparent() *Node {
