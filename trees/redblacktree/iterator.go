@@ -154,3 +154,7 @@ func (iterator *Iterator) Last() bool {
 	iterator.End()
 	return iterator.Prev()
 }
+
+func (iterator *Iterator) Position() byte {
+	return byte(iterator.position)
+}

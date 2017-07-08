@@ -369,7 +369,7 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 // Return the nearest node, and a integer
 // If found node less than key return int < 0
 // If found node equals key return 0
-// If found node large than key return int > 1
+// If found node large than key return int > 0
 func (tree *Tree) lookup(key interface{}) (*Node, int) {
 	node := tree.Root
 	pnode := (*Node)(nil)
@@ -387,7 +387,7 @@ func (tree *Tree) lookup(key interface{}) (*Node, int) {
 			node = node.Right
 		}
 	}
-	return pnode, compare
+	return pnode, -compare
 }
 
 func (node *Node) grandparent() *Node {

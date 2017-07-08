@@ -75,3 +75,7 @@ func (iterator *Iterator) First() bool {
 func (iterator *Iterator) Last() bool {
 	return iterator.iterator.Last()
 }
+
+func (iterator *Iterator) Position() byte {
+	return iterator.iterator.Position()
+}

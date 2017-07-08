@@ -67,6 +67,11 @@ func (m *Map) GetIteratorOrNext(key interface{}) (iter Iterator, found bool) {
 	return Iterator{_iter}, err
 }
 
+func (m *Map) GetIteratorOrPrev(key interface{}) (iter Iterator, found bool) {
+	_iter, err := m.tree.GetIteratorOrPrev(key)
+	return Iterator{_iter}, err
+}
+
 // Remove removes the element from the map by key.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
 func (m *Map) Remove(key interface{}) {
